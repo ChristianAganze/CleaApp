@@ -81,9 +81,10 @@ fun PredictionBanner(
                 Text(text = text, style = MaterialTheme.typography.titleSmall, color = Color(0xFF7B5E00), fontWeight = FontWeight.Bold)
                 Text(text = subText, style = MaterialTheme.typography.labelSmall, color = Color(0xFF7B5E00).copy(alpha = 0.8f))
                 confidence?.let { conf ->
+                    val percentage = if (conf <= 1.0f) (conf * 100).toInt() else conf.toInt()
                     // Typographie française : espace insécable avant les deux-points
                     Text(
-                        text = "Fiabilité\u00A0: ${(conf * 100).toInt()}%",
+                        text = "Fiabilité\u00A0: $percentage%",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF7B5E00).copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 4.dp)

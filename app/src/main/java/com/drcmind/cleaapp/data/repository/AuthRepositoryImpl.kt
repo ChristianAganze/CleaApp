@@ -70,7 +70,10 @@ class AuthRepositoryImpl(
             val token = dataStore.authToken.firstOrNull() ?: ""
             val response = api.getUser(token)
             if (response.status == HttpStatusCode.OK) {
-                val userDto = response.body<UserDto>()
+                val bodyText = response.bodyAsText()
+                val json = Json.parseToJsonElement(bodyText).jsonObject
+                val userObj = json["user"]?.jsonObject ?: json
+                val userDto = Json { ignoreUnknownKeys = true }.decodeFromJsonElement(UserDto.serializer(), userObj)
                 dataStore.saveUser(userDto.name, userDto.email)
                 AuthResult.Success(userDto.toDomain())
             } else {
@@ -101,14 +104,14 @@ class AuthRepositoryImpl(
             val token = dataStore.authToken.firstOrNull() ?: ""
             val csrfToken = api.getCsrfToken()
             val response = api.updateProfile(UpdateProfileRequestDto(name, email), token, csrfToken)
-            if (response.status == HttpStatusCode.OK) {
+            if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Accepted) {
                 dataStore.saveUser(name, email)
                 AuthResult.Success(Unit)
             } else {
                 handleResponseError(response)
             }
         } catch (e: Exception) {
-            AuthResult.Error("Mise à jour impossible.")
+            AuthResult.Error("Mise à jour impossible : ${e.localizedMessage ?: "Erreur réseau"}")
         }
     }
 
@@ -117,13 +120,13 @@ class AuthRepositoryImpl(
             val token = dataStore.authToken.firstOrNull() ?: ""
             val csrfToken = api.getCsrfToken()
             val response = api.updatePassword(UpdatePasswordRequestDto(currentPassword, newPassword, newPasswordConfirmation), token, csrfToken)
-            if (response.status == HttpStatusCode.OK) {
+            if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Accepted || response.status == HttpStatusCode.NoContent) {
                 AuthResult.Success(Unit)
             } else {
                 handleResponseError(response)
             }
         } catch (e: Exception) {
-            AuthResult.Error("Échec du changement de mot de passe.")
+            AuthResult.Error("Échec du changement de mot de passe : ${e.localizedMessage ?: "Erreur réseau"}")
         }
     }
 

@@ -5,9 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Mood {
-    @SerialName("VERY_GOOD") VERY_GOOD,
-    @SerialName("GOOD") GOOD,
-    @SerialName("NEUTRAL") NEUTRAL,
+    @SerialName("VERY_BAD") VERY_BAD,
     @SerialName("BAD") BAD,
-    @SerialName("VERY_BAD") VERY_BAD
+    @SerialName("NORMAL") NORMAL,
+    @SerialName("GOOD") GOOD,
+    @SerialName("VERY_GOOD") VERY_GOOD
 }
+

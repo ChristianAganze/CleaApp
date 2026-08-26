@@ -21,21 +21,44 @@ class AuthApi(private val client: HttpClient) {
 
     /**
      * Récupère le token CSRF.
-     * Aligné strictement sur le document : GET /sanctum/csrf-token (SANS /api)
+     * Aligné strictement sur le document : GET /sanctum/csrf-cookie (SANS /api)
      */
     suspend fun getCsrfToken(): String {
         return try {
-            val response = client.get("$baseUrl/sanctum/csrf-token") {
+            val response = client.get("$baseUrl/sanctum/csrf-cookie") {
                 header(HttpHeaders.Accept, "application/json")
             }
-            if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent) {
+            
+            // 1. Chercher dans les headers Set-Cookie (standard Laravel Sanctum)
+            val setCookieHeaders = response.headers.getAll(HttpHeaders.SetCookie) ?: emptyList()
+            var extractedToken = ""
+            for (header in setCookieHeaders) {
+                if (header.contains("XSRF-TOKEN=")) {
+                    val raw = header.substringAfter("XSRF-TOKEN=").substringBefore(";")
+                    extractedToken = runCatching { java.net.URLDecoder.decode(raw, "UTF-8") }.getOrDefault(raw)
+                    break
+                }
+            }
+            
+            if (extractedToken.isNotEmpty()) {
+                extractedToken
+            } else {
                 val body = response.bodyAsText().trim()
                 if (body.startsWith("{")) {
                     val json = Json.parseToJsonElement(body).jsonObject
-                    json["token"]?.jsonPrimitive?.content ?: json["csrf-token"]?.jsonPrimitive?.content ?: ""
-                } else if (body.startsWith("<!DOCTYPE")) "" else body
-            } else ""
-        } catch (e: Exception) { "" }
+                    json["token"]?.jsonPrimitive?.content 
+                        ?: json["csrf-token"]?.jsonPrimitive?.content 
+                        ?: json["_token"]?.jsonPrimitive?.content 
+                        ?: ""
+                } else if (body.startsWith("<!DOCTYPE") || body.startsWith("<html")) {
+                    ""
+                } else {
+                    body
+                }
+            }
+        } catch (e: Exception) { 
+            "" 
+        }
     }
 
     suspend fun login(request: LoginRequestDto, csrfToken: String): HttpResponse {

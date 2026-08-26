@@ -1,25 +1,37 @@
 package com.drcmind.cleaapp.ui.auth.onboarding
 
+import androidx.annotation.DrawableRes
+import com.drcmind.cleaapp.R
+
 data class OnboardingPage(
     val title: String,
+    val subtitle: String,
     val description: String,
-    val animationRes: Int // Placeholder for Lottie or drawable resource id
+    val tag: String,
+    @DrawableRes val imageRes: Int
 )
 
 val onboardingPages = listOf(
     OnboardingPage(
-        title = "Suivi intuitif de votre bien-être",
-        description = "Apprenez à connaître votre corps en toute sérénité. Sans jugement, juste vous et votre santé au quotidien.",
-        animationRes = 0 // Placeholder
+        tag = "SUIVI & BIEN-ÊTRE",
+        title = "Comprenez votre corps en toute clarté",
+        subtitle = "Prévisions personnalisées & sérénité",
+        description = "Suivez chaque phase de votre cycle avec des analyses précises et des rappels intuitifs pour vivre chaque jour en harmonie.",
+        imageRes = R.drawable.onboarding_cycle_1787731535362
     ),
     OnboardingPage(
-        title = "Une communauté bienveillante",
-        description = "Échangez, partagez et soutenez-vous dans un espace sûr, positif et 100% privé, conçu spécialement pour vous.",
-        animationRes = 0
+        tag = "SANTÉ & ANALYTIQUE",
+        title = "Des conseils adaptés à votre rythme",
+        subtitle = "Écoute bienveillante de vos symptômes",
+        description = "Notez vos humeurs, sensations et flux. Obtenez des insights médicaux clairs pour mieux appréhender vos besoins.",
+        imageRes = R.drawable.onboarding_insights_1787731548355
     ),
     OnboardingPage(
-        title = "Vos données, votre intimité",
-        description = "Votre vie privée est notre priorité absolue. Vos données de santé sont cryptées avec les standards les plus stricts.",
-        animationRes = 0
+        tag = "INTIMITÉ & SÉCURITÉ",
+        title = "Vos données intimes 100% protégées",
+        subtitle = "Chiffrement et confidentialité totale",
+        description = "Votre santé vous appartient. Vos données sont cryptées de bout en bout et conservées en toute sécurité.",
+        imageRes = R.drawable.onboarding_privacy_1787731561268
     )
 )
+

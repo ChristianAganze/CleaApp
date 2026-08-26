@@ -39,7 +39,7 @@ fun AddLogBottomSheet(
     }
     
     var selectedFlow by remember { mutableStateOf(FlowLevel.MEDIUM) }
-    var selectedMood by remember { mutableStateOf(Mood.NEUTRAL) }
+    var selectedMood by remember { mutableStateOf(Mood.NORMAL) }
     var painLevel by remember { mutableFloatStateOf(0f) }
     val selectedSymptomIds = remember { mutableStateListOf<String>() }
 
@@ -139,7 +139,7 @@ fun MoodSelector(selectedMood: Mood, onMoodSelected: (Mood) -> Unit) {
             val emoji = when(mood) {
                 Mood.VERY_BAD -> "😫"
                 Mood.BAD -> "😔"
-                Mood.NEUTRAL -> "😐"
+                Mood.NORMAL -> "😐"
                 Mood.GOOD -> "🙂"
                 Mood.VERY_GOOD -> "😊"
             }

@@ -1,0 +1,6 @@
+{
+  "name": "CleaApp",
+  "description": "Menstrual cycle tracking and health companion application",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
