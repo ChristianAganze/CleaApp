@@ -155,3 +155,13 @@ fun SymptomEntity.toDomain(): Symptom {
         icon = icon
     )
 }
+
+fun Symptom.toEntity(): SymptomEntity {
+    return SymptomEntity(
+        id = id,
+        name = name,
+        slug = slug,
+        description = description,
+        icon = icon
+    )
+}

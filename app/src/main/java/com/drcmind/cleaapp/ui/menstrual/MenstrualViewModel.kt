@@ -61,10 +61,9 @@ class MenstrualViewModel(
                 currentState.copy(
                     isLoading = false,
                     symptoms = symptomsResult.getOrDefault(currentState.symptoms),
-                    // On ne remplace par null que si on n'avait rien avant
                     dashboard = dashboardResult.getOrNull() ?: currentState.dashboard,
                     user = user,
-                    error = if (dashboardResult.isFailure) dashboardResult.exceptionOrNull()?.message else null
+                    error = if (dashboardResult.isFailure && currentState.dashboard == null) dashboardResult.exceptionOrNull()?.message else null
                 )
             }
         }

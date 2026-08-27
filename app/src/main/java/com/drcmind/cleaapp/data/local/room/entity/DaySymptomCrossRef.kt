@@ -7,20 +7,6 @@ import androidx.room.Index
 @Entity(
     tableName = "day_symptoms",
     primaryKeys = ["dayId", "symptomId"],
-    foreignKeys = [
-        ForeignKey(
-            entity = DayEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["dayId"],
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = SymptomEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["symptomId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
     indices = [Index(value = ["dayId"]), Index(value = ["symptomId"])]
 )
 data class DaySymptomCrossRef(

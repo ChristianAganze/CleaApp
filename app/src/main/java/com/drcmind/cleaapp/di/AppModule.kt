@@ -26,7 +26,7 @@ val appModule = module {
             androidContext(),
             CleaDatabase::class.java,
             "clea_db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
     single { get<CleaDatabase>().menstrualDao }
 

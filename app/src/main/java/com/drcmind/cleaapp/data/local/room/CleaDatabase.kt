@@ -12,7 +12,7 @@ import com.drcmind.cleaapp.data.local.room.entity.*
         SymptomEntity::class,
         DaySymptomCrossRef::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CleaDatabase : RoomDatabase() {

@@ -27,16 +27,16 @@ interface MenstrualDao {
     @Query("DELETE FROM cycles WHERE id = :id")
     suspend fun deleteCycle(id: String)
 
-    @Query("SELECT * FROM cycles WHERE status = :status ORDER BY startDate DESC LIMIT 1")
+    @Query("SELECT * FROM cycles WHERE UPPER(status) = UPPER(:status) ORDER BY startDate DESC LIMIT 1")
     suspend fun getActiveCycle(status: CycleStatus): CycleEntity?
 
-    @Query("SELECT * FROM cycles WHERE status = :status ORDER BY startDate DESC")
+    @Query("SELECT * FROM cycles WHERE UPPER(status) = UPPER(:status) ORDER BY startDate DESC")
     suspend fun getCompletedCycles(status: CycleStatus): List<CycleEntity>
 
     @Transaction
     @Query("""
         SELECT * FROM cycle_days 
-        WHERE cycleId = (SELECT id FROM cycles WHERE status = :status ORDER BY startDate DESC LIMIT 1)
+        WHERE cycleId = (SELECT id FROM cycles WHERE UPPER(status) = UPPER(:status) ORDER BY startDate DESC LIMIT 1)
         ORDER BY date ASC
     """)
     suspend fun getActiveCycleDays(status: CycleStatus): List<DayEntity>
