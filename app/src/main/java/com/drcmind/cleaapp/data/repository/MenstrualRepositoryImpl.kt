@@ -5,6 +5,7 @@ import com.drcmind.cleaapp.data.mapper.toDomain
 import com.drcmind.cleaapp.data.mapper.toEntity
 import com.drcmind.cleaapp.data.model.CycleStatus
 import com.drcmind.cleaapp.data.remote.api.MenstrualApiService
+import com.drcmind.cleaapp.data.remote.dto.*
 import com.drcmind.cleaapp.domain.model.*
 import com.drcmind.cleaapp.domain.repository.MenstrualRepository
 
@@ -43,7 +44,7 @@ class MenstrualRepositoryImpl(
     }
 
     override suspend fun updateCycle(id: String, startDate: String?, endDate: String?, cycleLength: Int?, periodLength: Int?, status: String?, notes: String?): Result<MenstrualCycle> = try {
-        val params = mutableMapOf<String, String?>().apply {
+        val params = mutableMapOf<String, String>().apply {
             startDate?.let { put("start_date", it) }
             endDate?.let { put("end_date", it) }
             cycleLength?.let { put("cycle_length", it.toString()) }
@@ -83,35 +84,114 @@ class MenstrualRepositoryImpl(
     }
 
     override suspend fun addCycleDay(cycleId: String, date: String, flow: String, painLevel: Int?, mood: String?, temperature: Float?, weight: Float?, medications: String?, notes: String?, symptomIds: List<String>?): Result<CycleDay> = try {
-        val params = mutableMapOf<String, Any?>().apply {
-            put("date", date)
-            put("flow", flow)
-            painLevel?.let { put("pain_level", it) }
-            mood?.let { put("mood", it) }
-            temperature?.let { put("temperature", it) }
-            weight?.let { put("weight", it) }
-            medications?.let { put("medications", it) }
-            notes?.let { put("notes", it) }
-            symptomIds?.let { put("symptom_ids", it) }
+        val existingDays = dao.getDaysForCycle(cycleId)
+        val existingDay = existingDays.firstOrNull { it.date == date }
+
+        val dayResult: CycleDay = if (existingDay != null) {
+            val updateReq = UpdateCycleDayRequest(
+                flow = flow,
+                painLevel = painLevel,
+                mood = mood,
+                temperature = temperature,
+                weight = weight,
+                medications = medications,
+                notes = notes
+            )
+            val updatedDto = try {
+                api.updateCycleDay(cycleId, existingDay.id, updateReq)
+            } catch (e: Exception) {
+                null
+            }
+            if (updatedDto != null) {
+                dao.insertDay(updatedDto.toEntity())
+                updatedDto.toDomain()
+            } else {
+                val updatedLocal = existingDay.copy(
+                    flow = flow,
+                    painLevel = painLevel,
+                    mood = mood,
+                    temperature = temperature,
+                    weight = weight,
+                    medications = medications,
+                    notes = notes
+                )
+                dao.insertDay(updatedLocal)
+                updatedLocal.toDomain()
+            }
+        } else {
+            val createReq = CreateCycleDayRequest(
+                date = date,
+                flow = flow,
+                painLevel = painLevel,
+                mood = mood,
+                temperature = temperature,
+                weight = weight,
+                medications = medications,
+                notes = notes,
+                symptomIds = symptomIds
+            )
+            val createdDto = try {
+                api.addCycleDay(cycleId, createReq)
+            } catch (e: Exception) {
+                null
+            }
+            if (createdDto != null) {
+                dao.insertDay(createdDto.toEntity())
+                createdDto.toDomain()
+            } else {
+                val generatedId = java.util.UUID.randomUUID().toString()
+                val localEntity = com.drcmind.cleaapp.data.local.room.entity.DayEntity(
+                    id = generatedId,
+                    cycleId = cycleId,
+                    date = date,
+                    flow = flow,
+                    painLevel = painLevel,
+                    mood = mood,
+                    temperature = temperature,
+                    weight = weight,
+                    medications = medications,
+                    notes = notes
+                )
+                dao.insertDay(localEntity)
+                localEntity.toDomain()
+            }
         }
-        val day = api.addCycleDay(cycleId, params)
-        dao.insertDay(day.toEntity())
-        Result.success(day.toDomain())
+
+        if (!symptomIds.isNullOrEmpty()) {
+            val symptomsPayload = symptomIds.map { id ->
+                SymptomItemPayload(id = id, severity = painLevel?.coerceAtLeast(1) ?: 1)
+            }
+            try {
+                api.attachSymptomsToDay(
+                    cycleId = cycleId,
+                    dayId = dayResult.id,
+                    request = AttachSymptomsRequest(symptoms = symptomsPayload, symptomIds = symptomIds)
+                )
+            } catch (e: Exception) {
+                // Continuer avec la persistance locale
+            }
+            val crossRefs = symptomIds.map { 
+                com.drcmind.cleaapp.data.local.room.entity.DaySymptomCrossRef(dayId = dayResult.id, symptomId = it) 
+            }
+            dao.insertDaySymptomCrossRef(crossRefs)
+        }
+
+        Result.success(dayResult)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     override suspend fun updateCycleDay(cycleId: String, dayId: String, flow: String?, painLevel: Int?, mood: String?, temperature: Float?, weight: Float?, medications: String?, notes: String?): Result<CycleDay> = try {
-        val params = mutableMapOf<String, Any?>().apply {
-            flow?.let { put("flow", it) }
-            painLevel?.let { put("pain_level", it) }
-            mood?.let { put("mood", it) }
-            temperature?.let { put("temperature", it) }
-            weight?.let { put("weight", it) }
-            medications?.let { put("medications", it) }
-            notes?.let { put("notes", it) }
-        }
-        val updated = api.updateCycleDay(cycleId, dayId, params)
+        val request = UpdateCycleDayRequest(
+            flow = flow,
+            painLevel = painLevel,
+            mood = mood,
+            temperature = temperature,
+            weight = weight,
+            medications = medications,
+            notes = notes
+        )
+        val updated = api.updateCycleDay(cycleId, dayId, request)
         dao.insertDay(updated.toEntity())
         Result.success(updated.toDomain())
     } catch (e: Exception) {
@@ -127,8 +207,9 @@ class MenstrualRepositoryImpl(
     }
 
     override suspend fun attachSymptomsToDay(cycleId: String, dayId: String, symptoms: List<Pair<String, Int>>): Result<Unit> = try {
-        val params = symptoms.map { mapOf("id" to it.first, "severity" to it.second) }
-        api.attachSymptomsToDay(cycleId, dayId, params)
+        val payloads = symptoms.map { SymptomItemPayload(id = it.first, severity = it.second) }
+        val symptomIds = symptoms.map { it.first }
+        api.attachSymptomsToDay(cycleId, dayId, AttachSymptomsRequest(symptoms = payloads, symptomIds = symptomIds))
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
@@ -136,10 +217,18 @@ class MenstrualRepositoryImpl(
 
     override suspend fun getSymptoms(): Result<List<Symptom>> = try {
         val remote = api.getSymptoms()
-        dao.insertSymptoms(remote.map { it.toEntity() })
-        Result.success(remote.map { it.toDomain() })
+        if (remote.isNotEmpty()) {
+            dao.insertSymptoms(remote.map { it.toEntity() })
+            Result.success(remote.map { it.toDomain() })
+        } else {
+            val local = dao.getAllSymptoms()
+            if (local.isNotEmpty()) Result.success(local.map { it.toDomain() })
+            else Result.success(DEFAULT_SYMPTOMS)
+        }
     } catch (e: Exception) {
-        Result.success(dao.getAllSymptoms().map { it.toDomain() })
+        val local = dao.getAllSymptoms()
+        if (local.isNotEmpty()) Result.success(local.map { it.toDomain() })
+        else Result.success(DEFAULT_SYMPTOMS)
     }
 
     override suspend fun getPredictions(): Result<Prediction> = try {

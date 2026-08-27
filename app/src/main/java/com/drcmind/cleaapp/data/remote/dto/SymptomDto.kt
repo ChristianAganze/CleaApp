@@ -1,14 +1,18 @@
-package com.drcmind.cleaapp.data.remote.dto// Fichier : data/remote/dto/MenstrualDtos.kt
-import kotlinx.serialization.Serializable
+package com.drcmind.cleaapp.data.remote.dto
+
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class SymptomDto(
-    val id: String,
-    val name: String,
-    val slug: String,
-    val description: String?,
-    val icon: String?,
-    @SerialName("is_active") val isActive: Boolean
+    @Serializable(with = FlexibleStringSerializer::class)
+    val id: String = "",
+    val name: String = "",
+    val slug: String = "",
+    val description: String? = null,
+    val icon: String? = null,
+    @Serializable(with = FlexibleBooleanSerializer::class)
+    @SerialName("is_active") val isActive: Boolean = true
 )
+
 

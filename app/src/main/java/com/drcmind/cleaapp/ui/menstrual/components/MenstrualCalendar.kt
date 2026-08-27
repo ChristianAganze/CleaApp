@@ -11,10 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,8 +32,8 @@ fun MenstrualCalendar(
 
     var displayMonth by remember { mutableStateOf(0) } // 0 = mois courant, -1 = mois précédent, etc.
 
-    val calendar = remember { Calendar.getInstance(Locale.US) }
-    val monthYearFormat = remember { SimpleDateFormat("MMMM yyyy", Locale.getDefault()) }
+    val calendar = remember { Calendar.getInstance(Locale.FRANCE) }
+    val monthYearFormat = remember { SimpleDateFormat("MMMM yyyy", Locale.FRENCH) }
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
 
     // Calculer le mois affiché
@@ -53,7 +55,11 @@ fun MenstrualCalendar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { displayMonth-- }) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = "Mois précédent", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(
+                    imageVector = Icons.Default.ChevronLeft,
+                    contentDescription = stringResource(R.string.calendar_prev_month),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
             Text(
                 text = monthName,
@@ -61,7 +67,11 @@ fun MenstrualCalendar(
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = { displayMonth++ }) {
-                Icon(Icons.Default.ChevronRight, contentDescription = "Mois suivant", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = stringResource(R.string.calendar_next_month),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
 
@@ -71,8 +81,17 @@ fun MenstrualCalendar(
         }
 
         // En-tête des jours
+        val dayHeaders = listOf(
+            stringResource(R.string.day_mon),
+            stringResource(R.string.day_tue),
+            stringResource(R.string.day_wed),
+            stringResource(R.string.day_thu),
+            stringResource(R.string.day_fri),
+            stringResource(R.string.day_sat),
+            stringResource(R.string.day_sun)
+        )
         Row(modifier = Modifier.fillMaxWidth()) {
-            listOf("L", "M", "M", "J", "V", "S", "D").forEach { day ->
+            dayHeaders.forEach { day ->
                 Text(
                     text = day,
                     modifier = Modifier.weight(1f),

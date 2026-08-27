@@ -39,10 +39,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 import com.drcmind.cleaapp.data.local.datastore.AuthDataStore
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -126,7 +128,7 @@ fun OnboardingScreen(
                                 .background(MaterialTheme.colorScheme.primary)
                         )
                         Text(
-                            text = "CLEA",
+                            text = stringResource(R.string.brand_name),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 letterSpacing = 1.8.sp
@@ -152,7 +154,7 @@ fun OnboardingScreen(
                         modifier = Modifier.testTag("onboarding_skip_button")
                     ) {
                         Text(
-                            text = "Passer",
+                            text = stringResource(R.string.action_skip),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -253,7 +255,7 @@ fun OnboardingScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = if (isLastPage) "Commencer l'expérience" else "Continuer",
+                            text = if (isLastPage) stringResource(R.string.onboarding_start_experience) else stringResource(R.string.action_continue),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.3.sp
@@ -282,6 +284,7 @@ private fun PagerItemView(
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "hero_scale"
     )
+    val pageTitle = stringResource(page.titleRes)
 
     Column(
         modifier = Modifier
@@ -320,7 +323,7 @@ private fun PagerItemView(
 
                 Image(
                     painter = painterResource(id = page.imageRes),
-                    contentDescription = page.title,
+                    contentDescription = pageTitle,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(24.dp)),
@@ -346,7 +349,7 @@ private fun PagerItemView(
                 modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
-                    text = page.tag,
+                    text = stringResource(page.tagRes),
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.2.sp
@@ -358,7 +361,7 @@ private fun PagerItemView(
 
             // Headline
             Text(
-                text = page.title,
+                text = pageTitle,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 32.sp
@@ -372,7 +375,7 @@ private fun PagerItemView(
 
             // Body Description with refined line-height and contrast
             Text(
-                text = page.description,
+                text = stringResource(page.descriptionRes),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 22.sp
                 ),

@@ -50,11 +50,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.drcmind.cleaapp.domain.model.getCurrentDay
-import com.drcmind.cleaapp.domain.model.getFertilityRange
-import com.drcmind.cleaapp.domain.model.getPhaseName
+import com.drcmind.cleaapp.R
+import com.drcmind.cleaapp.domain.model.*
 import com.drcmind.cleaapp.ui.components.CleaLogo
 import com.drcmind.cleaapp.ui.menstrual.components.ActionSmallCard
 import com.drcmind.cleaapp.ui.menstrual.components.AddLogBottomSheet
@@ -89,7 +89,8 @@ fun MenstrualDashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("CLEA",
+                    Text(
+                        text = stringResource(R.string.brand_name),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -107,7 +108,7 @@ fun MenstrualDashboardScreen(
                 },
                 actions = {
                     IconButton(onClick = { /* Notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = null)
+                        Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.dashboard_notifications_cd))
                     }
                     IconButton(onClick = onNavigateToProfile) {
                         state.user?.name?.let { name ->
@@ -125,7 +126,7 @@ fun MenstrualDashboardScreen(
                                     )
                                 }
                             }
-                        } ?: Icon(Icons.Default.Person, contentDescription = "Profil")
+                        } ?: Icon(Icons.Default.Person, contentDescription = stringResource(R.string.dashboard_profile_cd))
                     }
                 }
             )
@@ -140,7 +141,7 @@ fun MenstrualDashboardScreen(
                     containerColor = Color(0xFFAD5C5C),
                     contentColor = Color.White,
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("Noter ma journée") }
+                    text = { Text(stringResource(R.string.dashboard_log_day_fab)) }
                 )
             }
         }
@@ -153,7 +154,12 @@ fun MenstrualDashboardScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 340.dp),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        top = 16.dp,
+                        end = 16.dp,
+                        bottom = if (dashboard?.activeCycle != null) 96.dp else 24.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -179,7 +185,7 @@ fun MenstrualDashboardScreen(
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "Bonjour, ${user.name}\u00A0!",
+                                    text = stringResource(R.string.dashboard_greeting, user.name),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -192,7 +198,11 @@ fun MenstrualDashboardScreen(
                     }
 
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text(text = "Mon Cycle", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = stringResource(R.string.dashboard_my_cycle),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     if (dashboard?.activeCycle == null) {
@@ -204,12 +214,13 @@ fun MenstrualDashboardScreen(
                             val currentDay = dashboard.activeCycle.getCurrentDay()
                             val totalDays = dashboard.stats.averageCycleLength
                             val phase = dashboard.getPhaseName()
+                            val desc = dashboard.getPhaseDescription()
                             
                             CycleStatusCard(
                                 day = currentDay,
                                 totalDays = totalDays,
                                 phaseName = phase,
-                                description = "Votre énergie est au sommet. Moment idéal pour briller et diriger."
+                                description = desc
                             )
                         }
 
@@ -217,8 +228,8 @@ fun MenstrualDashboardScreen(
                             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 dashboard.predictions?.let { pred ->
                                     PredictionBanner(
-                                        text = "Prochaines règles le ${pred.predictedPeriodStart}",
-                                        subText = "Fenêtre de fertilité identifiée",
+                                        text = stringResource(R.string.dashboard_prediction_period, pred.predictedPeriodStart),
+                                        subText = stringResource(R.string.dashboard_prediction_fertility),
                                         confidence = pred.confidence
                                     )
                                 }
@@ -246,7 +257,7 @@ fun MenstrualDashboardScreen(
                                 ) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Terminer le cycle actuel")
+                                    Text(stringResource(R.string.dashboard_complete_cycle))
                                 }
                             }
                         }
@@ -258,20 +269,14 @@ fun MenstrualDashboardScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             ActionSmallCard(
-                                title = "Symptômes",
+                                title = stringResource(R.string.dashboard_action_symptoms),
                                 onClick = { 
-                                    if (dashboard?.activeCycle != null) {
-                                        showAddLogSheet = true 
-                                    } else {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Veuillez d'abord démarrer un cycle.")
-                                        }
-                                    }
+                                    showAddLogSheet = true 
                                 },
                                 modifier = Modifier.weight(1f)
                             )
                             ActionSmallCard(
-                                title = "Analyses",
+                                title = stringResource(R.string.dashboard_action_analytics),
                                 onClick = { /* Bientôt disponible */ },
                                 modifier = Modifier.weight(1f)
                             )
@@ -284,10 +289,18 @@ fun MenstrualDashboardScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter), color = Color(0xFF913131))
             }
             
-            // Affichage des erreurs éventuelles
+            // Affichage des erreurs ou succès éventuels
             LaunchedEffect(state.error) {
                 state.error?.let {
                     snackbarHostState.showSnackbar(it)
+                }
+            }
+
+            val logSuccessMessage = stringResource(R.string.dashboard_log_success)
+            LaunchedEffect(state.isSuccess) {
+                if (state.isSuccess) {
+                    snackbarHostState.showSnackbar(logSuccessMessage)
+                    viewModel.resetSuccess()
                 }
             }
         }
@@ -297,9 +310,8 @@ fun MenstrualDashboardScreen(
                 symptoms = state.symptoms,
                 onDismiss = { showAddLogSheet = false },
                 onSave = { date, flow, pain, mood, selectedSymptoms ->
-                    dashboard?.activeCycle?.id?.let { cycleId ->
-                        viewModel.addDailyLog(cycleId, date, flow, pain, mood, selectedSymptoms)
-                    }
+                    val cycleId = dashboard?.activeCycle?.id ?: ""
+                    viewModel.addDailyLog(cycleId, date, flow, pain, mood, selectedSymptoms)
                     showAddLogSheet = false
                 }
             )

@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 import org.koin.androidx.compose.koinViewModel
 import com.drcmind.cleaapp.ui.components.CleaButton
 import com.drcmind.cleaapp.ui.components.CleaTextField
@@ -133,13 +135,13 @@ fun LoginScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Eco,
-                                contentDescription = "Clea App",
+                                contentDescription = stringResource(R.string.app_name),
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
                         Text(
-                            text = "CLEA",
+                            text = stringResource(R.string.brand_name),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 letterSpacing = 2.sp
@@ -151,7 +153,7 @@ fun LoginScreen(
 
                 // Greeting & Subtitle
                 Text(
-                    text = "Bon retour parmi nous",
+                    text = stringResource(R.string.login_title),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         lineHeight = 34.sp
@@ -163,7 +165,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Connectez-vous pour retrouver votre cycle et vos insights santé.",
+                    text = stringResource(R.string.login_subtitle),
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -190,8 +192,8 @@ fun LoginScreen(
                         CleaTextField(
                             value = state.email,
                             onValueChange = viewModel::onEmailChange,
-                            label = "Adresse email",
-                            placeholder = "exemple@clea.app",
+                            label = stringResource(R.string.login_email_label),
+                            placeholder = stringResource(R.string.login_email_placeholder),
                             isError = state.fieldErrors.containsKey("email"),
                             errorMessage = state.fieldErrors["email"]?.firstOrNull(),
                             leadingIcon = {
@@ -212,8 +214,8 @@ fun LoginScreen(
                         CleaTextField(
                             value = state.password,
                             onValueChange = viewModel::onPasswordChange,
-                            label = "Mot de passe",
-                            placeholder = "••••••••",
+                            label = stringResource(R.string.login_password_label),
+                            placeholder = stringResource(R.string.login_password_placeholder),
                             isError = state.fieldErrors.containsKey("password"),
                             errorMessage = state.fieldErrors["password"]?.firstOrNull(),
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -237,13 +239,14 @@ fun LoginScreen(
                             },
                             trailingIcon = {
                                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                val visibilityCd = if (passwordVisible) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                 IconButton(
                                     onClick = { passwordVisible = !passwordVisible },
                                     modifier = Modifier.testTag("login_password_visibility")
                                 ) {
                                     Icon(
                                         imageVector = image,
-                                        contentDescription = if (passwordVisible) "Masquer le mot de passe" else "Afficher le mot de passe",
+                                        contentDescription = visibilityCd,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -261,7 +264,7 @@ fun LoginScreen(
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "Mot de passe oublié ?",
+                                    text = stringResource(R.string.login_forgot_password),
                                     color = MaterialTheme.colorScheme.secondary,
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
                                 )
@@ -299,7 +302,7 @@ fun LoginScreen(
                         }
 
                         CleaButton(
-                            text = "Se connecter",
+                            text = stringResource(R.string.login_submit_button),
                             onClick = {
                                 focusManager.clearFocus()
                                 viewModel.login()
@@ -322,7 +325,7 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "OU CONTINUER AVEC",
+                        text = stringResource(R.string.login_or_continue_with),
                         modifier = Modifier.padding(horizontal = 12.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             letterSpacing = 1.sp,
@@ -403,7 +406,7 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Pas encore de compte ?",
+                    text = stringResource(R.string.login_no_account),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -412,7 +415,7 @@ fun LoginScreen(
                     modifier = Modifier.testTag("login_register_navigation")
                 ) {
                     Text(
-                        text = "S'inscrire",
+                        text = stringResource(R.string.login_go_to_register),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.secondary
                     )

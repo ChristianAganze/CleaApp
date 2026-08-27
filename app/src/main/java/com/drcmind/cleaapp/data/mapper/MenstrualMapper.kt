@@ -56,7 +56,7 @@ fun PredictionDto.toDomain(): Prediction {
         predictedOvulation = predictedOvulation,
         fertilityStart = fertilityStart,
         fertilityEnd = fertilityEnd,
-        confidence = confidence
+        confidence = confidence ?: 0f
     )
 }
 

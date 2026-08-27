@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
@@ -64,22 +65,33 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = DarkOnSurface,
     surfaceVariant = DarkSurfaceVariant,
     onSurfaceVariant = DarkOnSurfaceVariant,
+    surfaceContainerLowest = Color(0xFF141617),
+    surfaceContainerLow = Color(0xFF1D2021),
+    surfaceContainer = Color(0xFF222526),
+    surfaceContainerHigh = Color(0xFF2C2F30),
+    surfaceContainerHighest = Color(0xFF373A3B),
     outline = DarkOutline
 )
 
 @Composable
 fun CleaAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Set dynamic color to false so our brand colors "Empathetic Vitality" always show!
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val isSystemDark = isSystemInDarkTheme()
+    val isDark = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemDark
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
+        isDark -> DarkColorScheme
         else -> LightColorScheme
     }
 
@@ -87,6 +99,19 @@ fun CleaAppTheme(
         colorScheme = colorScheme,
         typography = Typography,
         shapes = Shapes,
+        content = content
+    )
+}
+
+@Composable
+fun CleaAppTheme(
+    darkTheme: Boolean,
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    CleaAppTheme(
+        themeMode = if (darkTheme) ThemeMode.DARK else ThemeMode.LIGHT,
+        dynamicColor = dynamicColor,
         content = content
     )
 }

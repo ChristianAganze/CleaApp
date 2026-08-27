@@ -32,7 +32,7 @@ val appModule = module {
 
     // Data Layer - Remote
     single { AuthApi(get()) }
-    single { MenstrualApiService(get()) }
+    single { MenstrualApiService(get(), get(), get()) }
 
     // Repositories
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }

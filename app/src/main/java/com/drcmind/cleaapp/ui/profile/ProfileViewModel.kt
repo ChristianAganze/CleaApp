@@ -2,9 +2,11 @@ package com.drcmind.cleaapp.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.drcmind.cleaapp.data.local.datastore.AuthDataStore
 import com.drcmind.cleaapp.domain.model.AuthResult
 import com.drcmind.cleaapp.domain.model.User
 import com.drcmind.cleaapp.domain.repository.AuthRepository
+import com.drcmind.cleaapp.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,15 +18,18 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val isUpdatingProfile: Boolean = false,
     val isUpdatingPassword: Boolean = false,
+    val isLoggingOut: Boolean = false,
     val profileSuccessMessage: String? = null,
     val passwordSuccessMessage: String? = null,
     val error: String? = null,
     val fieldErrors: Map<String, List<String>> = emptyMap(),
-    val isLoggedOut: Boolean = false
+    val isLoggedOut: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM
 )
 
 class ProfileViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val authDataStore: AuthDataStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -32,6 +37,21 @@ class ProfileViewModel(
 
     init {
         loadUserProfile()
+        observeThemeMode()
+    }
+
+    private fun observeThemeMode() {
+        viewModelScope.launch {
+            authDataStore.themeMode.collect { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
+            }
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            authDataStore.setThemeMode(mode)
+        }
     }
 
     fun loadUserProfile() {
@@ -154,8 +174,9 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoggingOut = true) }
             repository.logout()
-            _uiState.update { it.copy(isLoggedOut = true) }
+            _uiState.update { it.copy(isLoggingOut = false, isLoggedOut = true) }
         }
     }
 }

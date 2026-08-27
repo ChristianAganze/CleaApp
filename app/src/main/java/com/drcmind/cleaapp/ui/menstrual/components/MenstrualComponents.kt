@@ -13,10 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 
 @Composable
 fun CycleStatusCard(
@@ -48,7 +50,11 @@ fun CycleStatusCard(
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "$day", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text(text = "JOUR $day SUR $safeTotalDays", fontSize = 12.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text(
+                        text = stringResource(R.string.dashboard_cycle_day_progress, day, safeTotalDays),
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -82,9 +88,8 @@ fun PredictionBanner(
                 Text(text = subText, style = MaterialTheme.typography.labelSmall, color = Color(0xFF7B5E00).copy(alpha = 0.8f))
                 confidence?.let { conf ->
                     val percentage = if (conf <= 1.0f) (conf * 100).toInt() else conf.toInt()
-                    // Typographie française : espace insécable avant les deux-points
                     Text(
-                        text = "Fiabilité\u00A0: $percentage%",
+                        text = stringResource(R.string.dashboard_confidence_format, percentage),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF7B5E00).copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 4.dp)
@@ -106,8 +111,17 @@ fun HygieneTipCard(modifier: Modifier = Modifier) {
             Icon(Icons.Default.Lightbulb, contentDescription = null, tint = Color(0xFF2E7D32))
             Spacer(Modifier.width(12.dp))
             Column {
-                Text("Conseil Bien-être", style = MaterialTheme.typography.labelLarge, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
-                Text("Boire de l'eau tiède aide à détendre les muscles utérins.", style = MaterialTheme.typography.bodySmall, color = Color(0xFF2E7D32))
+                Text(
+                    text = stringResource(R.string.dashboard_tip_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFF2E7D32),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_tip_content),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF2E7D32)
+                )
             }
         }
     }
@@ -121,14 +135,22 @@ fun StartCycleCard(onStart: () -> Unit, modifier: Modifier = Modifier) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Aucun cycle actif", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("Commencez à suivre votre santé aujourd'hui.", textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp))
+            Text(
+                text = stringResource(R.string.dashboard_no_active_cycle_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.dashboard_no_active_cycle_desc),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
             Button(
                 onClick = onStart,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF913131)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Démarrer mon cycle")
+                Text(stringResource(R.string.dashboard_start_cycle_button))
             }
         }
     }
@@ -151,3 +173,4 @@ fun ActionSmallCard(
         }
     }
 }
+

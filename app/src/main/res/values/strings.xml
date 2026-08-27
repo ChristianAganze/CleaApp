@@ -1,3 +1,159 @@
 <resources>
     <string name="app_name">CleaApp</string>
+    <string name="brand_name">CLEA</string>
+
+    <!-- General & Navigation -->
+    <string name="action_back">Retour</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_confirm">Confirmer</string>
+    <string name="action_save">Enregistrer</string>
+    <string name="action_validate">Valider</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_skip">Passer</string>
+    <string name="action_continue">Continuer</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_start_experience">Commencer l\'expérience</string>
+    <string name="onboarding_tag_tracking">SUIVI &amp; BIEN-ÊTRE</string>
+    <string name="onboarding_title_1">Comprenez votre corps en toute clarté</string>
+    <string name="onboarding_subtitle_1">Prévisions personnalisées &amp; sérénité</string>
+    <string name="onboarding_desc_1">Suivez chaque phase de votre cycle avec des analyses précises et des rappels intuitifs pour vivre chaque jour en harmonie.</string>
+
+    <string name="onboarding_tag_health">SANTÉ &amp; ANALYTIQUE</string>
+    <string name="onboarding_title_2">Des conseils adaptés à votre rythme</string>
+    <string name="onboarding_subtitle_2">Écoute bienveillante de vos symptômes</string>
+    <string name="onboarding_desc_2">Notez vos humeurs, sensations et flux. Obtenez des insights médicaux clairs pour mieux appréhender vos besoins.</string>
+
+    <string name="onboarding_tag_privacy">INTIMITÉ &amp; SÉCURITÉ</string>
+    <string name="onboarding_title_3">Vos données intimes 100% protégées</string>
+    <string name="onboarding_subtitle_3">Chiffrement et confidentialité totale</string>
+    <string name="onboarding_desc_3">Votre santé vous appartient. Vos données sont cryptées de bout en bout et conservées en toute sécurité.</string>
+
+    <!-- Authentication - Login -->
+    <string name="login_title">Bon retour parmi nous</string>
+    <string name="login_subtitle">Connectez-vous pour retrouver votre cycle et vos insights santé.</string>
+    <string name="login_email_label">Adresse email</string>
+    <string name="login_email_placeholder">exemple@clea.app</string>
+    <string name="login_password_label">Mot de passe</string>
+    <string name="login_password_placeholder">••••••••</string>
+    <string name="login_forgot_password">Mot de passe oublié ?</string>
+    <string name="login_submit_button">Se connecter</string>
+    <string name="login_or_continue_with">OU CONTINUER AVEC</string>
+    <string name="login_no_account">Pas encore de compte ?</string>
+    <string name="login_go_to_register">S\'inscrire</string>
+    <string name="password_hide_cd">Masquer le mot de passe</string>
+    <string name="password_show_cd">Afficher le mot de passe</string>
+
+    <!-- Authentication - Register / Sign In -->
+    <string name="register_tag">NOUVEAU COMPTE</string>
+    <string name="register_title">Créez votre espace intime</string>
+    <string name="register_subtitle">Rejoignez une expérience bienveillante dédiée à votre santé féminine et votre équilibre.</string>
+    <string name="register_name_label">Nom complet</string>
+    <string name="register_name_placeholder">Sarah Martin</string>
+    <string name="register_email_label">Adresse email</string>
+    <string name="register_email_placeholder">sarah@exemple.com</string>
+    <string name="register_password_label">Mot de passe</string>
+    <string name="register_password_placeholder">8 caractères minimum</string>
+    <string name="register_confirm_password_label">Confirmer le mot de passe</string>
+    <string name="register_confirm_password_placeholder">Répétez votre mot de passe</string>
+    <string name="register_terms_prefix">J\'accepte les </string>
+    <string name="register_terms_conditions">Conditions</string>
+    <string name="register_terms_and"> et la </string>
+    <string name="register_terms_privacy">Politique de confidentialité</string>
+    <string name="register_terms_suffix"> de CLEA.</string>
+    <string name="register_privacy_assurance">Vos données de santé restent cryptées et 100% privées.</string>
+    <string name="register_submit_button">Créer mon compte</string>
+    <string name="register_already_have_account">Déjà un compte ?</string>
+    <string name="register_go_to_login">Se connecter</string>
+    <string name="register_success_message">Compte créé avec succès ! Vous pouvez maintenant vous connecter.</string>
+    <string name="register_validation_error_generic">Veuillez corriger les erreurs indiquées ci-dessus</string>
+
+    <!-- Menstrual Dashboard -->
+    <string name="dashboard_greeting">Bonjour, %1$s !</string>
+    <string name="dashboard_my_cycle">Mon Cycle</string>
+    <string name="dashboard_log_day_fab">Noter ma journée</string>
+    <string name="dashboard_notifications_cd">Notifications</string>
+    <string name="dashboard_profile_cd">Profil</string>
+    <string name="dashboard_complete_cycle">Terminer le cycle actuel</string>
+    <string name="dashboard_action_symptoms">Symptômes</string>
+    <string name="dashboard_action_analytics">Analyses</string>
+    <string name="dashboard_tip_title">Conseil Bien-être</string>
+    <string name="dashboard_tip_content">Boire de l\'eau tiède aide à détendre les muscles utérins.</string>
+    <string name="dashboard_no_active_cycle_title">Aucun cycle actif</string>
+    <string name="dashboard_no_active_cycle_desc">Commencez à suivre votre santé aujourd\'hui.</string>
+    <string name="dashboard_start_cycle_button">Démarrer mon cycle</string>
+    <string name="dashboard_cycle_day_progress">JOUR %1$d SUR %2$d</string>
+    <string name="dashboard_prediction_period">Prochaines règles le %1$s</string>
+    <string name="dashboard_prediction_fertility">Fenêtre de fertilité identifiée</string>
+    <string name="dashboard_confidence_format">Fiabilité : %1$d%%</string>
+    <string name="dashboard_log_success">Journal du jour enregistré avec succès !</string>
+
+    <!-- Add Daily Log Bottom Sheet -->
+    <string name="log_sheet_title">Comment allez-vous ?</string>
+    <string name="log_flow_section">Flux menstruel</string>
+    <string name="log_mood_section">Votre humeur</string>
+    <string name="log_pain_level_section">Niveau de douleur : %1$d</string>
+    <string name="log_symptoms_section">Symptômes</string>
+    <string name="log_submit_button">Enregistrer</string>
+
+    <!-- Flow Levels -->
+    <string name="flow_none">Aucun</string>
+    <string name="flow_spotting">Léger</string>
+    <string name="flow_light">Faible</string>
+    <string name="flow_medium">Moyen</string>
+    <string name="flow_heavy">Abondant</string>
+
+    <!-- Moods -->
+    <string name="mood_very_bad">Très mal</string>
+    <string name="mood_bad">Mauvais</string>
+    <string name="mood_normal">Neutre</string>
+    <string name="mood_good">Bien</string>
+    <string name="mood_very_good">Très bien</string>
+
+    <!-- Complete Cycle Dialog -->
+    <string name="complete_cycle_title">Clôturer le cycle</string>
+    <string name="complete_cycle_message">Félicitations pour avoir complété ce cycle. Veuillez confirmer les informations finales.</string>
+    <string name="complete_cycle_period_length_label">Durée des règles (jours)</string>
+    <string name="complete_cycle_total_length_label">Durée totale du cycle (jours)</string>
+    <string name="complete_cycle_confirm_button">Valider et Calculer</string>
+
+    <!-- Calendar -->
+    <string name="calendar_prev_month">Mois précédent</string>
+    <string name="calendar_next_month">Mois suivant</string>
+    <string name="day_mon">L</string>
+    <string name="day_tue">M</string>
+    <string name="day_wed">M</string>
+    <string name="day_thu">J</string>
+    <string name="day_fri">V</string>
+    <string name="day_sat">S</string>
+    <string name="day_sun">D</string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_screen_title">Mon Espace Personnel</string>
+    <string name="profile_default_user_name">Utilisateur</string>
+    <string name="profile_theme_section_title">Apparence &amp; Thème</string>
+    <string name="profile_theme_section_desc">Choisissez le thème d\'affichage de votre application :</string>
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="profile_info_section_title">Informations personnelles</string>
+    <string name="profile_save_changes_button">Enregistrer les modifications</string>
+    <string name="profile_security_section_title">Sécurité &amp; Mot de passe</string>
+    <string name="profile_current_password_label">Mot de passe actuel</string>
+    <string name="profile_new_password_label">Nouveau mot de passe</string>
+    <string name="profile_confirm_new_password_label">Confirmer le nouveau mot de passe</string>
+    <string name="profile_update_password_button">Mettre à jour le mot de passe</string>
+    <string name="profile_logout_button">Se déconnecter</string>
+    <string name="logout_dialog_title">Déconnexion</string>
+    <string name="logout_dialog_message">Êtes-vous sûr de vouloir vous déconnecter de votre compte CLEA ?</string>
+
+    <!-- Validation & Error Messages -->
+    <string name="error_fill_all_fields">Veuillez remplir tous les champs</string>
+    <string name="error_invalid_email">Adresse email invalide</string>
+    <string name="error_password_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="error_fill_all_profile_fields">Veuillez remplir tous les champs du profil.</string>
+    <string name="error_fill_all_password_fields">Veuillez remplir tous les champs du mot de passe.</string>
+    <string name="error_no_active_cycle">Veuillez d\'abord démarrer un cycle actif.</string>
+    <string name="profile_updated_success">Profil mis à jour avec succès !</string>
+    <string name="password_updated_success">Mot de passe modifié avec succès !</string>
 </resources>

@@ -6,8 +6,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.drcmind.cleaapp.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,22 +24,22 @@ fun CompleteCycleDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Clôturer le cycle", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.complete_cycle_title), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Félicitations pour avoir complété ce cycle. Veuillez confirmer les informations finales.")
+                Text(stringResource(R.string.complete_cycle_message))
                 
                 OutlinedTextField(
                     value = periodLength,
                     onValueChange = { periodLength = it },
-                    label = { Text("Durée des règles (jours)") },
+                    label = { Text(stringResource(R.string.complete_cycle_period_length_label)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 
                 OutlinedTextField(
                     value = cycleLength,
                     onValueChange = { cycleLength = it },
-                    label = { Text("Durée totale du cycle (jours)") },
+                    label = { Text(stringResource(R.string.complete_cycle_total_length_label)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -49,12 +51,13 @@ fun CompleteCycleDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF913131))
             ) {
-                Text("Valider et Calculer")
+                Text(stringResource(R.string.complete_cycle_confirm_button))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annuler") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
         shape = RoundedCornerShape(24.dp)
     )
 }
+

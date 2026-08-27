@@ -45,6 +45,19 @@ data class Symptom(
     val icon: String?
 )
 
+val DEFAULT_SYMPTOMS = listOf(
+    Symptom(id = "1", name = "Crampes", slug = "crampes", description = "Douleurs abdominales ou crampes utérines", icon = "cramps"),
+    Symptom(id = "2", name = "Maux de tête", slug = "headache", description = "Migraines ou céphalées", icon = "headache"),
+    Symptom(id = "3", name = "Fatigue", slug = "fatigue", description = "Baisse d'énergie et somnolence", icon = "fatigue"),
+    Symptom(id = "4", name = "Ballonnements", slug = "bloating", description = "Gonflement abdominal", icon = "bloating"),
+    Symptom(id = "5", name = "Acné", slug = "acne", description = "Éruptions cutanées", icon = "acne"),
+    Symptom(id = "6", name = "Sautes d'humeur", slug = "mood_swings", description = "Sensibilité émotionnelle accrue", icon = "mood"),
+    Symptom(id = "7", name = "Sensibilité mammaire", slug = "breast_tenderness", description = "Tensions dans la poitrine", icon = "breast"),
+    Symptom(id = "8", name = "Douleurs lombaires", slug = "backache", description = "Douleurs dans le bas du dos", icon = "backache"),
+    Symptom(id = "9", name = "Insomnie", slug = "insomnia", description = "Difficultés de sommeil", icon = "sleep"),
+    Symptom(id = "10", name = "Nausées", slug = "nausea", description = "Inconfort gastrique", icon = "nausea")
+)
+
 data class Prediction(
     val averageCycleLength: Int,
     val averagePeriodLength: Int,
@@ -100,6 +113,16 @@ fun MenstrualDashboard.getPhaseName(): String {
         day < ovulationDay -> "Phase Folliculaire"
         day == ovulationDay -> "Phase d'Ovulation"
         else -> "Phase Lutéale"
+    }
+}
+
+fun MenstrualDashboard.getPhaseDescription(): String {
+    return when (getPhaseName()) {
+        "Phase Menstruelle" -> "Période de repos et d'écoute de votre corps. Privilégiez les boissons chaudes et le calme."
+        "Phase Folliculaire" -> "Regain d'énergie et de créativité. Moment idéal pour planifier et démarrer des projets."
+        "Phase d'Ovulation" -> "Votre énergie et votre fertilité sont au sommet. Moment clé de votre cycle."
+        "Phase Lutéale" -> "Ralentissement progressif. Prenez soin de vous et favorisez un sommeil réparateur."
+        else -> "Suivi et analyse de votre cycle en cours."
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.drcmind.cleaapp.data.local.security.TokenCipher
+import com.drcmind.cleaapp.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,6 +23,7 @@ class AuthDataStore(private val context: Context) {
         val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed")
         val USER_NAME_KEY = stringPreferencesKey("user_name")
         val USER_EMAIL_KEY = stringPreferencesKey("user_email")
+        val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { preferences ->
@@ -40,6 +42,17 @@ class AuthDataStore(private val context: Context) {
 
     val userEmail: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_EMAIL_KEY]
+    }
+
+    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { preferences ->
+        val raw = preferences[THEME_MODE_KEY] ?: ThemeMode.SYSTEM.name
+        runCatching { ThemeMode.valueOf(raw) }.getOrDefault(ThemeMode.SYSTEM)
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { preferences ->
+            preferences[THEME_MODE_KEY] = mode.name
+        }
     }
 
     suspend fun saveToken(token: String) {

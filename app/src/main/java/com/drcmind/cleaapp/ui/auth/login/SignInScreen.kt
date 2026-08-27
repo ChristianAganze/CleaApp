@@ -30,8 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 import org.koin.androidx.compose.koinViewModel
 import com.drcmind.cleaapp.ui.components.CleaButton
 import com.drcmind.cleaapp.ui.components.CleaTextField
@@ -53,6 +56,7 @@ fun SignInScreen(
     onBackToLogin: () -> Unit,
     viewModel: SignInViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsState()
     val focusManager = LocalFocusManager.current
     var passwordVisible by remember { mutableStateOf(false) }
@@ -60,9 +64,10 @@ fun SignInScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var acceptedTerms by remember { mutableStateOf(false) }
 
+    val successMsg = stringResource(R.string.register_success_message)
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
-            snackbarHostState.showSnackbar("Compte créé avec succès ! Vous pouvez maintenant vous connecter.")
+            snackbarHostState.showSnackbar(successMsg)
             onBackToLogin()
         }
     }
@@ -98,7 +103,7 @@ fun SignInScreen(
                             )
                         }
                         Text(
-                            text = "CLEA",
+                            text = stringResource(R.string.brand_name),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.2.sp
@@ -114,7 +119,7 @@ fun SignInScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Retour",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -180,7 +185,7 @@ fun SignInScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 ) {
                     Text(
-                        text = "NOUVEAU COMPTE",
+                        text = stringResource(R.string.register_tag),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.2.sp
@@ -192,7 +197,7 @@ fun SignInScreen(
 
                 // Title & Subtitle
                 Text(
-                    text = "Créez votre espace intime",
+                    text = stringResource(R.string.register_title),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         lineHeight = 32.sp
@@ -204,7 +209,7 @@ fun SignInScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Rejoignez une expérience bienveillante dédiée à votre santé féminine et votre équilibre.",
+                    text = stringResource(R.string.register_subtitle),
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -231,8 +236,8 @@ fun SignInScreen(
                         CleaTextField(
                             value = state.name,
                             onValueChange = viewModel::onNameChange,
-                            label = "Nom complet",
-                            placeholder = "Sarah Martin",
+                            label = stringResource(R.string.register_name_label),
+                            placeholder = stringResource(R.string.register_name_placeholder),
                             isError = state.fieldErrors.containsKey("name"),
                             errorMessage = state.fieldErrors["name"]?.firstOrNull(),
                             leadingIcon = {
@@ -253,8 +258,8 @@ fun SignInScreen(
                         CleaTextField(
                             value = state.email,
                             onValueChange = viewModel::onEmailChange,
-                            label = "Adresse email",
-                            placeholder = "sarah@exemple.com",
+                            label = stringResource(R.string.login_email_label),
+                            placeholder = stringResource(R.string.register_email_placeholder),
                             isError = state.fieldErrors.containsKey("email"),
                             errorMessage = state.fieldErrors["email"]?.firstOrNull(),
                             leadingIcon = {
@@ -275,8 +280,8 @@ fun SignInScreen(
                         CleaTextField(
                             value = state.password,
                             onValueChange = viewModel::onPasswordChange,
-                            label = "Mot de passe",
-                            placeholder = "8 caractères minimum",
+                            label = stringResource(R.string.login_password_label),
+                            placeholder = stringResource(R.string.register_password_placeholder),
                             isError = state.fieldErrors.containsKey("password"),
                             errorMessage = state.fieldErrors["password"]?.firstOrNull(),
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -294,13 +299,14 @@ fun SignInScreen(
                             },
                             trailingIcon = {
                                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                val visibilityCd = if (passwordVisible) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                 IconButton(
                                     onClick = { passwordVisible = !passwordVisible },
                                     modifier = Modifier.testTag("register_password_visibility")
                                 ) {
                                     Icon(
                                         imageVector = image,
-                                        contentDescription = if (passwordVisible) "Masquer" else "Afficher",
+                                        contentDescription = visibilityCd,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -312,8 +318,8 @@ fun SignInScreen(
                         CleaTextField(
                             value = state.passwordConfirmation,
                             onValueChange = viewModel::onPasswordConfirmationChange,
-                            label = "Confirmer le mot de passe",
-                            placeholder = "Répétez votre mot de passe",
+                            label = stringResource(R.string.register_confirm_password_label),
+                            placeholder = stringResource(R.string.register_confirm_password_placeholder),
                             isError = state.fieldErrors.containsKey("password_confirmation"),
                             errorMessage = state.fieldErrors["password_confirmation"]?.firstOrNull(),
                             visualTransformation = if (passwordConfirmationVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -339,13 +345,14 @@ fun SignInScreen(
                             },
                             trailingIcon = {
                                 val image = if (passwordConfirmationVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                val visibilityCd = if (passwordConfirmationVisible) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                 IconButton(
                                     onClick = { passwordConfirmationVisible = !passwordConfirmationVisible },
                                     modifier = Modifier.testTag("register_confirm_password_visibility")
                                 ) {
                                     Icon(
                                         imageVector = image,
-                                        contentDescription = if (passwordConfirmationVisible) "Masquer" else "Afficher",
+                                        contentDescription = visibilityCd,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -355,6 +362,11 @@ fun SignInScreen(
                         )
 
                         // Privacy & Terms Checkbox
+                        val terms1 = stringResource(R.string.register_terms_prefix)
+                        val termsConditions = stringResource(R.string.register_terms_conditions)
+                        val termsAnd = stringResource(R.string.register_terms_and)
+                        val termsPrivacy = stringResource(R.string.register_terms_privacy)
+                        val termsBrand = stringResource(R.string.register_terms_suffix)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -372,15 +384,15 @@ fun SignInScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = buildAnnotatedString {
-                                    append("J'accepte les ")
+                                    append(terms1)
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)) {
-                                        append("Conditions")
+                                        append(termsConditions)
                                     }
-                                    append(" et la ")
+                                    append(termsAnd)
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)) {
-                                        append("Politique de confidentialité")
+                                        append(termsPrivacy)
                                     }
-                                    append(" de CLEA.")
+                                    append(termsBrand)
                                 },
                                 style = MaterialTheme.typography.bodySmall.copy(lineHeight = 16.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -405,7 +417,7 @@ fun SignInScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = "Vos données de santé restent cryptées et 100% privées.",
+                                    text = stringResource(R.string.register_privacy_assurance),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -434,7 +446,7 @@ fun SignInScreen(
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Text(
-                                        text = state.globalError ?: "Veuillez corriger les erreurs indiquées ci-dessus",
+                                        text = state.globalError ?: stringResource(R.string.register_validation_error_generic),
                                         color = MaterialTheme.colorScheme.onErrorContainer,
                                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
                                     )
@@ -443,7 +455,7 @@ fun SignInScreen(
                         }
 
                         CleaButton(
-                            text = "Créer mon compte",
+                            text = stringResource(R.string.register_submit_button),
                             onClick = {
                                 focusManager.clearFocus()
                                 viewModel.register()
@@ -466,7 +478,7 @@ fun SignInScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Déjà un compte ?",
+                        text = stringResource(R.string.register_already_have_account),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -475,7 +487,7 @@ fun SignInScreen(
                         modifier = Modifier.testTag("register_login_navigation")
                     ) {
                         Text(
-                            text = "Se connecter",
+                            text = stringResource(R.string.register_go_to_login),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -485,4 +497,5 @@ fun SignInScreen(
         }
     }
 }
+
 

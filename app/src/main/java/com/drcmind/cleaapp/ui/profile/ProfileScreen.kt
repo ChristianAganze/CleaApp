@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -15,10 +16,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -34,6 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,8 +47,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drcmind.cleaapp.R
 import com.drcmind.cleaapp.ui.components.CleaButton
 import com.drcmind.cleaapp.ui.components.CleaTextField
+import com.drcmind.cleaapp.ui.theme.ThemeMode
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,6 +87,7 @@ fun ProfileScreen(
 
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) {
+            showLogoutDialog = false
             onLogoutSuccess()
         }
     }
@@ -105,33 +114,42 @@ fun ProfileScreen(
             onDismissRequest = { showLogoutDialog = false },
             title = {
                 Text(
-                    text = "Déconnexion",
+                    text = stringResource(R.string.logout_dialog_title),
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
-                Text("Êtes-vous sûr de vouloir vous déconnecter de votre compte CLEA ?")
+                Text(stringResource(R.string.logout_dialog_message))
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        showLogoutDialog = false
                         viewModel.logout()
                     },
+                    enabled = !uiState.isLoggingOut,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     ),
                     modifier = Modifier.testTag("confirm_logout_button")
                 ) {
-                    Text("Se déconnecter")
+                    if (uiState.isLoggingOut) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onError,
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(stringResource(R.string.profile_logout_button))
+                    }
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showLogoutDialog = false },
+                    onClick = { if (!uiState.isLoggingOut) showLogoutDialog = false },
+                    enabled = !uiState.isLoggingOut,
                     modifier = Modifier.testTag("cancel_logout_button")
                 ) {
-                    Text("Annuler")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             shape = RoundedCornerShape(20.dp)
@@ -143,7 +161,7 @@ fun ProfileScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mon Espace Personnel",
+                        text = stringResource(R.string.profile_screen_title),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -155,7 +173,7 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Retour",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -167,7 +185,7 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Se déconnecter",
+                            contentDescription = stringResource(R.string.profile_logout_button),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -236,16 +254,16 @@ fun ProfileScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(68.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        Brush.linearGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.primary,
-                                                MaterialTheme.colorScheme.secondary
-                                            )
+                                .size(68.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.secondary
                                         )
-                                    ),
+                                    )
+                                ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -259,7 +277,7 @@ fun ProfileScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = uiState.user?.name ?: "Utilisateur",
+                                    text = uiState.user?.name ?: stringResource(R.string.profile_default_user_name),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -284,6 +302,112 @@ fun ProfileScreen(
                                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                         )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Section Thème & Apparence
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Palette,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.profile_theme_section_title),
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Text(
+                                text = stringResource(R.string.profile_theme_section_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val currentTheme = uiState.themeMode
+
+                                val modes = listOf(
+                                    Triple(ThemeMode.SYSTEM, stringResource(R.string.theme_system), Icons.Filled.BrightnessAuto),
+                                    Triple(ThemeMode.LIGHT, stringResource(R.string.theme_light), Icons.Filled.LightMode),
+                                    Triple(ThemeMode.DARK, stringResource(R.string.theme_dark), Icons.Filled.DarkMode)
+                                )
+
+                                modes.forEach { (mode, label, icon) ->
+                                    val isSelected = currentTheme == mode
+                                    Surface(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .clickable { viewModel.setThemeMode(mode) }
+                                            .testTag("theme_button_${mode.name.lowercase()}"),
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = if (isSelected) {
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                        },
+                                        border = if (isSelected) {
+                                            androidx.compose.foundation.BorderStroke(
+                                                2.dp,
+                                                MaterialTheme.colorScheme.primary
+                                            )
+                                        } else null
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = label,
+                                                tint = if (isSelected) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                },
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                            Text(
+                                                text = label,
+                                                style = MaterialTheme.typography.labelMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                                ),
+                                                color = if (isSelected) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -316,7 +440,7 @@ fun ProfileScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "Informations personnelles",
+                                    text = stringResource(R.string.profile_info_section_title),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -325,7 +449,7 @@ fun ProfileScreen(
                             CleaTextField(
                                 value = name,
                                 onValueChange = { name = it },
-                                label = "Nom complet",
+                                label = stringResource(R.string.register_name_label),
                                 isError = uiState.fieldErrors.containsKey("name"),
                                 errorMessage = uiState.fieldErrors["name"]?.firstOrNull(),
                                 leadingIcon = {
@@ -346,7 +470,7 @@ fun ProfileScreen(
                             CleaTextField(
                                 value = email,
                                 onValueChange = { email = it },
-                                label = "Adresse email",
+                                label = stringResource(R.string.login_email_label),
                                 isError = uiState.fieldErrors.containsKey("email"),
                                 errorMessage = uiState.fieldErrors["email"]?.firstOrNull(),
                                 leadingIcon = {
@@ -371,7 +495,7 @@ fun ProfileScreen(
                             )
 
                             CleaButton(
-                                text = "Enregistrer les modifications",
+                                text = stringResource(R.string.profile_save_changes_button),
                                 onClick = {
                                     focusManager.clearFocus()
                                     viewModel.updateProfile(name, email)
@@ -408,7 +532,7 @@ fun ProfileScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "Sécurité & Mot de passe",
+                                    text = stringResource(R.string.profile_security_section_title),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -417,7 +541,7 @@ fun ProfileScreen(
                             CleaTextField(
                                 value = currentPassword,
                                 onValueChange = { currentPassword = it },
-                                label = "Mot de passe actuel",
+                                label = stringResource(R.string.profile_current_password_label),
                                 isError = uiState.fieldErrors.containsKey("current_password"),
                                 errorMessage = uiState.fieldErrors["current_password"]?.firstOrNull(),
                                 visualTransformation = if (showCurrentPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -430,10 +554,11 @@ fun ProfileScreen(
                                     )
                                 },
                                 trailingIcon = {
+                                    val visibilityCd = if (showCurrentPassword) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                     IconButton(onClick = { showCurrentPassword = !showCurrentPassword }) {
                                         Icon(
                                             imageVector = if (showCurrentPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                            contentDescription = null,
+                                            contentDescription = visibilityCd,
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -449,7 +574,7 @@ fun ProfileScreen(
                             CleaTextField(
                                 value = newPassword,
                                 onValueChange = { newPassword = it },
-                                label = "Nouveau mot de passe",
+                                label = stringResource(R.string.profile_new_password_label),
                                 isError = uiState.fieldErrors.containsKey("new_password") || uiState.fieldErrors.containsKey("password"),
                                 errorMessage = uiState.fieldErrors["new_password"]?.firstOrNull() ?: uiState.fieldErrors["password"]?.firstOrNull(),
                                 visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -462,10 +587,11 @@ fun ProfileScreen(
                                     )
                                 },
                                 trailingIcon = {
+                                    val visibilityCd = if (showNewPassword) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                     IconButton(onClick = { showNewPassword = !showNewPassword }) {
                                         Icon(
                                             imageVector = if (showNewPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                            contentDescription = null,
+                                            contentDescription = visibilityCd,
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -481,7 +607,7 @@ fun ProfileScreen(
                             CleaTextField(
                                 value = newPasswordConfirmation,
                                 onValueChange = { newPasswordConfirmation = it },
-                                label = "Confirmer le nouveau mot de passe",
+                                label = stringResource(R.string.profile_confirm_new_password_label),
                                 isError = uiState.fieldErrors.containsKey("new_password_confirmation"),
                                 errorMessage = uiState.fieldErrors["new_password_confirmation"]?.firstOrNull(),
                                 visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -494,10 +620,11 @@ fun ProfileScreen(
                                     )
                                 },
                                 trailingIcon = {
+                                    val visibilityCd = if (showConfirmPassword) stringResource(R.string.password_hide_cd) else stringResource(R.string.password_show_cd)
                                     IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
                                         Icon(
                                             imageVector = if (showConfirmPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                            contentDescription = null,
+                                            contentDescription = visibilityCd,
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -547,7 +674,7 @@ fun ProfileScreen(
                             }
 
                             CleaButton(
-                                text = "Mettre à jour le mot de passe",
+                                text = stringResource(R.string.profile_update_password_button),
                                 onClick = {
                                     focusManager.clearFocus()
                                     viewModel.updatePassword(currentPassword, newPassword, newPasswordConfirmation)
@@ -585,7 +712,7 @@ fun ProfileScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Se déconnecter",
+                            text = stringResource(R.string.profile_logout_button),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }
@@ -594,3 +721,4 @@ fun ProfileScreen(
         }
     }
 }
+

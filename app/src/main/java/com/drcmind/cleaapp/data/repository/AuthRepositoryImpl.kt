@@ -11,6 +11,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.jsonObject
@@ -85,18 +86,23 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun logout(): AuthResult<Unit> {
-        return try {
-            val token = dataStore.authToken.firstOrNull() ?: ""
-            val csrfToken = api.getCsrfToken()
-            api.logout(token, csrfToken)
-            dataStore.clearToken()
-            dataStore.clearUser()
-            AuthResult.Success(Unit)
-        } catch (e: Exception) {
-            dataStore.clearToken()
-            dataStore.clearUser()
-            AuthResult.Success(Unit)
+        val token = dataStore.authToken.firstOrNull() ?: ""
+        // Nettoyage immédiat et garanti des identifiants locaux
+        dataStore.clearToken()
+        dataStore.clearUser()
+
+        // Notification non-bloquante au serveur
+        if (token.isNotBlank()) {
+            try {
+                withTimeoutOrNull(2000L) {
+                    val csrfToken = api.getCsrfToken()
+                    api.logout(token, csrfToken)
+                }
+            } catch (e: Exception) {
+                // Erreur réseau ignorée pour ne pas bloquer la déconnexion locale
+            }
         }
+        return AuthResult.Success(Unit)
     }
 
     override suspend fun updateProfile(name: String, email: String): AuthResult<Unit> {

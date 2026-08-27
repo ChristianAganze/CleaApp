@@ -13,5 +13,7 @@ data class PredictionDto(
     @SerialName("predicted_ovulation") val predictedOvulation: String = "",
     @SerialName("fertility_start") val fertilityStart: String = "",
     @SerialName("fertility_end") val fertilityEnd: String = "",
-    val confidence: Float = 0f
+    @Serializable(with = FlexibleFloatSerializer::class)
+    val confidence: Float? = 0f
 )
+

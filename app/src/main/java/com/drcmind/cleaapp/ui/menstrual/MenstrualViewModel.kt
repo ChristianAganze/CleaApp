@@ -100,15 +100,31 @@ class MenstrualViewModel(
     fun addDailyLog(cycleId: String, date: String, flow: String, painLevel: Int, mood: String, symptomIds: List<String>) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, isSuccess = false, error = null) }
+            var targetCycleId = cycleId
+            if (targetCycleId.isBlank()) {
+                val active = _state.value.dashboard?.activeCycle
+                if (active != null) {
+                    targetCycleId = active.id
+                } else {
+                    val createResult = repository.createCycle(date, null)
+                    if (createResult.isSuccess) {
+                        targetCycleId = createResult.getOrNull()?.id ?: ""
+                    }
+                }
+            }
+            if (targetCycleId.isBlank()) {
+                _state.update { it.copy(error = "Veuillez d'abord démarrer un cycle actif.", isLoading = false) }
+                return@launch
+            }
             repository.addCycleDay(
-                cycleId = cycleId, date = date, flow = flow, painLevel = painLevel,
+                cycleId = targetCycleId, date = date, flow = flow, painLevel = painLevel,
                 mood = mood, temperature = null, weight = null, medications = null, notes = null,
                 symptomIds = symptomIds
             ).onSuccess {
                 _state.update { it.copy(isSuccess = true) }
                 refreshAll()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message, isLoading = false) }
+                _state.update { it.copy(error = error.message ?: "Erreur lors de l'enregistrement", isLoading = false) }
             }
         }
     }
