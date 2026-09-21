@@ -11,6 +11,11 @@
     <string name="action_close">Fermer</string>
     <string name="action_skip">Passer</string>
     <string name="action_continue">Continuer</string>
+    <string name="action_sync">Actualiser</string>
+    <string name="library_title">Bibliothèque CLEA</string>
+    <string name="library_search_placeholder">Rechercher un conseil, une phase...</string>
+    <string name="library_empty_title">Aucun article trouvé</string>
+    <string name="library_read_article">Lire l\'article →</string>
 
     <!-- Onboarding -->
     <string name="onboarding_start_experience">Commencer l\'expérience</string>

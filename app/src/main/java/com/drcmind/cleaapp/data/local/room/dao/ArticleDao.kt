@@ -16,13 +16,16 @@ interface ArticleDao {
     @Query("SELECT * FROM articles WHERE isFavorite = 1 ORDER BY publishedAt DESC")
     fun getFavoriteArticles(): Flow<List<ArticleEntity>>
 
-    @Query("SELECT * FROM articles WHERE id = :id")
+    @Query("SELECT * FROM articles WHERE id = :id OR slug = :id LIMIT 1")
     suspend fun getArticleById(id: String): ArticleEntity?
+
+    @Query("SELECT * FROM articles WHERE slug = :slug LIMIT 1")
+    suspend fun getArticleBySlug(slug: String): ArticleEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(articles: List<ArticleEntity>)
 
-    @Query("UPDATE articles SET isFavorite = :isFavorite WHERE id = :id")
+    @Query("UPDATE articles SET isFavorite = :isFavorite WHERE id = :id OR slug = :id")
     suspend fun updateFavorite(id: String, isFavorite: Boolean)
 
     @Query("DELETE FROM articles")

@@ -16,7 +16,7 @@ import com.drcmind.cleaapp.data.local.room.entity.*
         AgendaItemEntity::class,
         ArticleEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class CleaDatabase : RoomDatabase() {

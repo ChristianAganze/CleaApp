@@ -3,6 +3,7 @@ package com.drcmind.cleaapp.data.remote.api
 import com.drcmind.cleaapp.data.local.datastore.AuthDataStore
 import com.drcmind.cleaapp.data.remote.dto.ArticleDto
 import com.drcmind.cleaapp.data.remote.dto.ArticleListResponseDto
+import com.drcmind.cleaapp.data.remote.dto.CategoryDto
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -48,18 +49,45 @@ class ArticleApiService(
     }
 
     /**
-     * Liste des articles : GET /api/contents
+     * Catégories : GET /api/content/categories
+     */
+    suspend fun getCategories(): List<CategoryDto> {
+        return try {
+            val response = client.get("api/content/categories") {
+                withAuth(includeCsrf = false)
+            }
+            response.bodyOrThrow()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Liste des articles publiés : GET /api/content/articles
+     * Paramètres :
+     *  - category : slug de catégorie (ex. "couple", "sante-menstruelle")
+     *  - q : recherche plein texte
+     *  - favorites_only : 1 si favoris uniquement
+     *  - sort : "latest" (défaut), "popular", "reading_time"
+     *  - per_page : 1-50 (défaut 50)
      */
     suspend fun getArticles(
         category: String? = null,
-        search: String? = null
+        q: String? = null,
+        favoritesOnly: Boolean = false,
+        sort: String? = "latest",
+        perPage: Int = 50
     ): List<ArticleDto> {
-        val response = client.get("api/contents") {
+        val response = client.get("api/content/articles") {
             withAuth(includeCsrf = false)
             url {
-                category?.let { parameters.append("category", it) }
-                search?.let { parameters.append("search", it) }
-                parameters.append("per_page", "50")
+                category?.takeIf { it.isNotBlank() }?.let { parameters.append("category", it) }
+                q?.takeIf { it.isNotBlank() }?.let { parameters.append("q", it) }
+                if (favoritesOnly) {
+                    parameters.append("favorites_only", "1")
+                }
+                sort?.let { parameters.append("sort", it) }
+                parameters.append("per_page", perPage.coerceIn(1, 50).toString())
             }
         }
         val listResponse = response.bodyOrThrow<ArticleListResponseDto>()
@@ -67,21 +95,48 @@ class ArticleApiService(
     }
 
     /**
-     * Détail d'un article : GET /api/contents/{id}
+     * Détail d'un article : GET /api/content/articles/{slug}
      */
-    suspend fun getArticleDetail(id: String): ArticleDto {
-        val response = client.get("api/contents/$id") {
+    suspend fun getArticleDetail(slug: String): ArticleDto {
+        val response = client.get("api/content/articles/$slug") {
             withAuth(includeCsrf = false)
         }
         return response.bodyOrThrow()
     }
 
     /**
-     * Basculer favori : POST /api/contents/{id}/favorite
+     * Ajouter aux favoris : POST /api/content/articles/{slug}/favorite
      */
-    suspend fun toggleFavorite(id: String): HttpResponse {
-        return client.post("api/contents/$id/favorite") {
+    suspend fun addFavorite(slug: String): HttpResponse {
+        return client.post("api/content/articles/$slug/favorite") {
             withAuth(includeCsrf = true)
+        }
+    }
+
+    /**
+     * Retirer des favoris : DELETE /api/content/articles/{slug}/favorite
+     */
+    suspend fun removeFavorite(slug: String): HttpResponse {
+        return client.delete("api/content/articles/$slug/favorite") {
+            withAuth(includeCsrf = true)
+        }
+    }
+
+    /**
+     * Mes favoris paginés : GET /api/content/articles/favorites
+     */
+    suspend fun getFavoriteArticles(): List<ArticleDto> {
+        return try {
+            val response = client.get("api/content/articles/favorites") {
+                withAuth(includeCsrf = false)
+                url {
+                    parameters.append("per_page", "50")
+                }
+            }
+            val listResponse = response.bodyOrThrow<ArticleListResponseDto>()
+            listResponse.data
+        } catch (_: Exception) {
+            getArticles(favoritesOnly = true)
         }
     }
 }
