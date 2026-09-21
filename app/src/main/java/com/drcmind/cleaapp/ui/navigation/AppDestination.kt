@@ -10,7 +10,9 @@ sealed interface AppDestination {
     @Serializable
     data object Login : AppDestination
     @Serializable
-    data object SignIn: AppDestination
+    data object SignIn : AppDestination
+    @Serializable
+    data object InitialSetup : AppDestination
     @Serializable
     data object Home : AppDestination
     @Serializable

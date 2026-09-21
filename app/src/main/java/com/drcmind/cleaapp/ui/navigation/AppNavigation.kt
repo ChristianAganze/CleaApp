@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.NavEntry
 import com.drcmind.cleaapp.ui.auth.login.LoginScreen
 import com.drcmind.cleaapp.ui.auth.login.SignInScreen
 import com.drcmind.cleaapp.ui.auth.onboarding.OnboardingScreen
+import com.drcmind.cleaapp.ui.auth.setup.InitialSetupScreen
 import com.drcmind.cleaapp.ui.auth.splash.SplashScreen
 import com.drcmind.cleaapp.ui.home.MainScreen
 import com.drcmind.cleaapp.ui.profile.ProfileScreen
@@ -54,10 +55,22 @@ fun AppNavigation() {
                     }
                 )
             }
+            is AppDestination.InitialSetup -> NavEntry(destination) {
+                InitialSetupScreen(
+                    onSetupCompleted = {
+                        backStack.clear()
+                        backStack.add(AppDestination.Home)
+                    }
+                )
+            }
             is AppDestination.Home -> NavEntry(destination) {
                 MainScreen(
                     onNavigateToProfile = {
                         backStack.add(AppDestination.Profile)
+                    },
+                    onLogoutSuccess = {
+                        backStack.clear()
+                        backStack.add(AppDestination.Login)
                     }
                 )
             }
