@@ -23,52 +23,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.drcmind.cleaapp.ui.components.CleaButton
-
-enum class AgendaCategory(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    ALL("Tous", Icons.Outlined.GridView),
-    WORK("Travail", Icons.Outlined.WorkOutline),
-    FAMILY("Famille", Icons.Outlined.FamilyRestroom),
-    SPIRITUALITY("Spiritualité", Icons.Outlined.Spa),
-    PERSONAL("Perso", Icons.Outlined.Person)
-}
-
-data class AgendaTask(
-    val id: String,
-    val title: String,
-    val category: String,
-    val time: String,
-    val kind: String = "task",
-    var isDone: Boolean = false,
-    val hasReminder: Boolean = true
-)
+import com.drcmind.cleaapp.domain.model.AgendaItem
+import com.drcmind.cleaapp.domain.model.AgendaItemCategory
+import com.drcmind.cleaapp.domain.model.AgendaKind
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaScreen(
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    viewModel: AgendaViewModel = koinViewModel()
 ) {
-    var selectedCategory by remember { mutableStateOf(AgendaCategory.ALL) }
-    var showAddDialog by remember { mutableStateOf(false) }
-
-    val sampleTasks = remember {
-        mutableStateListOf(
-            AgendaTask("1", "Prière & méditation matinale", "spirituality", "07:00", isDone = true),
-            AgendaTask("2", "Réunion d'équipe & suivi projet", "work", "10:30", isDone = false),
-            AgendaTask("3", "Hydratation & tisane relaxante", "personal", "14:00", isDone = false),
-            AgendaTask("4", "Temps de qualité en famille", "family", "19:00", isDone = false)
-        )
-    }
+    val state by viewModel.state.collectAsState()
+    var showAddBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Mon Agenda",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.EventNote,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Mon Agenda",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { viewModel.refresh() },
+                        modifier = Modifier.testTag("agenda_refresh_button")
+                    ) {
+                        Icon(Icons.Outlined.Refresh, contentDescription = "Actualiser")
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -77,9 +72,10 @@ fun AgendaScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDialog = true },
+                onClick = { showAddBottomSheet = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(18.dp),
                 modifier = Modifier.testTag("agenda_fab_add_task")
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nouvelle tâche")
@@ -92,25 +88,44 @@ fun AgendaScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Category Filter Pills
+            // Category Filter Pills (Travail, Famille, Spiritualité, Perso)
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(AgendaCategory.entries.toTypedArray()) { cat ->
-                    val isSelected = selectedCategory == cat
+                item {
+                    val isSelected = state.selectedCategory == null
                     FilterChip(
                         selected = isSelected,
-                        onClick = { selectedCategory = cat },
-                        label = { Text(cat.title) },
+                        onClick = { viewModel.setCategory(null) },
+                        label = { Text("Tous") },
                         leadingIcon = {
-                            Icon(
-                                imageVector = cat.icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Icon(Icons.Outlined.GridView, contentDescription = null, modifier = Modifier.size(16.dp))
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+
+                items(AgendaItemCategory.entries.toTypedArray()) { cat ->
+                    val isSelected = state.selectedCategory == cat
+                    val icon = when (cat) {
+                        AgendaItemCategory.WORK -> Icons.Outlined.WorkOutline
+                        AgendaItemCategory.FAMILY -> Icons.Outlined.FamilyRestroom
+                        AgendaItemCategory.SPIRITUALITY -> Icons.Outlined.Spa
+                        AgendaItemCategory.PERSONAL -> Icons.Outlined.Person
+                    }
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel.setCategory(cat) },
+                        label = { Text(cat.label) },
+                        leadingIcon = {
+                            Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = FilterChipDefaults.filterChipColors(
@@ -121,35 +136,83 @@ fun AgendaScreen(
                 }
             }
 
-            val filteredTasks = remember(selectedCategory, sampleTasks.toList()) {
-                if (selectedCategory == AgendaCategory.ALL) {
-                    sampleTasks
-                } else {
-                    sampleTasks.filter { it.category.equals(selectedCategory.name, ignoreCase = true) }
+            // Status Filter Tabs (Toutes, À faire, Terminées)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                StatusFilter.entries.forEach { filter ->
+                    val isSelected = state.selectedStatusFilter == filter
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { viewModel.setStatusFilter(filter) }
+                    ) {
+                        Box(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = filter.label,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
                 }
             }
 
-            if (filteredTasks.isEmpty()) {
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Main List
+            if (state.isLoading && state.items.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (state.items.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.EventAvailable,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            modifier = Modifier.size(56.dp)
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            modifier = Modifier.size(72.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Outlined.EventAvailable,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = "Aucun élément trouvé",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Aucune tâche pour cette catégorie",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "Ajoutez vos tâches professionnelles, personnelles ou temps de prière pour organiser votre rythme.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
@@ -157,137 +220,184 @@ fun AgendaScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(horizontal = 20.dp, vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(filteredTasks, key = { it.id }) { task ->
-                        Card(
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (task.isDone) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = if (task.isDone) 0.dp else 1.5.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val idx = sampleTasks.indexOfFirst { it.id == task.id }
-                                    if (idx != -1) {
-                                        sampleTasks[idx] = sampleTasks[idx].copy(isDone = !task.isDone)
-                                    }
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(14.dp)
-                            ) {
-                                Checkbox(
-                                    checked = task.isDone,
-                                    onCheckedChange = { checked ->
-                                        val idx = sampleTasks.indexOfFirst { it.id == task.id }
-                                        if (idx != -1) {
-                                            sampleTasks[idx] = sampleTasks[idx].copy(isDone = checked)
-                                        }
-                                    }
-                                )
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = task.title,
-                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                            fontWeight = if (task.isDone) FontWeight.Normal else FontWeight.SemiBold,
-                                            textDecoration = if (task.isDone) TextDecoration.LineThrough else TextDecoration.None
-                                        ),
-                                        color = if (task.isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Schedule,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(13.dp)
-                                        )
-                                        Text(
-                                            text = task.time,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        if (task.hasReminder) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Notifications,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.secondary,
-                                                modifier = Modifier.size(13.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    items(state.items, key = { it.id }) { item ->
+                        AgendaItemCard(
+                            item = item,
+                            onToggle = { viewModel.toggleTask(item) },
+                            onDelete = { viewModel.deleteTask(item.id) }
+                        )
                     }
                 }
             }
         }
     }
 
-    if (showAddDialog) {
-        var newTitle by remember { mutableStateOf("") }
-        var newTime by remember { mutableStateOf("12:00") }
-        var newCategory by remember { mutableStateOf(AgendaCategory.PERSONAL) }
-
-        AlertDialog(
-            onDismissRequest = { showAddDialog = false },
-            title = { Text("Nouvelle tâche / rappel") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = newTitle,
-                        onValueChange = { newTitle = it },
-                        label = { Text("Titre de la tâche") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = newTime,
-                        onValueChange = { newTime = it },
-                        label = { Text("Heure (ex: 14:30)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+    if (showAddBottomSheet) {
+        AddEditTaskBottomSheet(
+            onDismiss = { showAddBottomSheet = false },
+            onSubmit = { kind, title, category, notes, dueAt, remindAt ->
+                viewModel.createTask(
+                    kind = kind,
+                    title = title,
+                    category = category,
+                    notes = notes,
+                    dueAt = dueAt,
+                    remindAt = remindAt,
+                    onSuccess = { showAddBottomSheet = false }
+                )
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (newTitle.isNotBlank()) {
-                            sampleTasks.add(
-                                0,
-                                AgendaTask(
-                                    id = System.currentTimeMillis().toString(),
-                                    title = newTitle,
-                                    category = newCategory.name.lowercase(),
-                                    time = newTime,
-                                    isDone = false
-                                )
+            isSubmitting = state.isCreating
+        )
+    }
+}
+
+@Composable
+fun AgendaItemCard(
+    item: AgendaItem,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (item.isDone) {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (item.isDone) 0.dp else 1.5.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Checkbox(
+                checked = item.isDone,
+                onCheckedChange = { onToggle() },
+                modifier = Modifier.size(24.dp)
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = when (item.category) {
+                            AgendaItemCategory.WORK -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                            AgendaItemCategory.FAMILY -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                            AgendaItemCategory.SPIRITUALITY -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+                            AgendaItemCategory.PERSONAL -> MaterialTheme.colorScheme.surfaceVariant
+                        }
+                    ) {
+                        Text(
+                            text = item.category.label,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    if (item.kind == AgendaKind.REMINDER) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                        ) {
+                            Text(
+                                text = "Rappel",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
-                            showAddDialog = false
                         }
                     }
-                ) {
-                    Text("Ajouter")
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) {
-                    Text("Annuler")
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = if (item.isDone) FontWeight.Normal else FontWeight.SemiBold,
+                        textDecoration = if (item.isDone) TextDecoration.LineThrough else TextDecoration.None
+                    ),
+                    color = if (item.isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                )
+
+                if (!item.notes.isNullOrBlank()) {
+                    Text(
+                        text = item.notes,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    item.dueAt?.let { due ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Schedule,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = due.take(16).replace("T", " "),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    item.remindAt?.let {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Notifications,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = "Rappel actif",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
                 }
             }
-        )
+
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = "Supprimer",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.drcmind.cleaapp.data.local.room
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.drcmind.cleaapp.data.local.room.dao.AgendaDao
 import com.drcmind.cleaapp.data.local.room.dao.MenstrualDao
 import com.drcmind.cleaapp.data.local.room.entity.*
 
@@ -10,11 +11,13 @@ import com.drcmind.cleaapp.data.local.room.entity.*
         CycleEntity::class,
         DayEntity::class,
         SymptomEntity::class,
-        DaySymptomCrossRef::class
+        DaySymptomCrossRef::class,
+        AgendaItemEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class CleaDatabase : RoomDatabase() {
     abstract val menstrualDao: MenstrualDao
+    abstract val agendaDao: AgendaDao
 }
