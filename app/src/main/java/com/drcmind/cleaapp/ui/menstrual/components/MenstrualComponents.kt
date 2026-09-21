@@ -1,15 +1,20 @@
 package com.drcmind.cleaapp.ui.menstrual.components
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +38,7 @@ fun CycleStatusCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF913131)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         shape = RoundedCornerShape(24.dp)
     ) {
         Column(
@@ -42,25 +47,40 @@ fun CycleStatusCard(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
-                    progress = progress,
+                    progress = { progress },
                     modifier = Modifier.size(150.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 8.dp,
-                    trackColor = Color.White.copy(alpha = 0.2f)
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "$day", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = "$day",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                     Text(
                         text = stringResource(R.string.dashboard_cycle_day_progress, day, safeTotalDays),
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(text = phaseName, style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = description, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f), textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = phaseName,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -74,24 +94,38 @@ fun PredictionBanner(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color(0xFFFFD54F),
-        shape = RoundedCornerShape(100.dp)
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.WaterDrop, contentDescription = null, tint = Color(0xFF7B5E00), modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = Icons.Default.WaterDrop,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                Text(text = text, style = MaterialTheme.typography.titleSmall, color = Color(0xFF7B5E00), fontWeight = FontWeight.Bold)
-                Text(text = subText, style = MaterialTheme.typography.labelSmall, color = Color(0xFF7B5E00).copy(alpha = 0.8f))
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = subText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.85f)
+                )
                 confidence?.let { conf ->
                     val percentage = if (conf <= 1.0f) (conf * 100).toInt() else conf.toInt()
                     Text(
                         text = stringResource(R.string.dashboard_confidence_format, percentage),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF7B5E00).copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -100,28 +134,122 @@ fun PredictionBanner(
     }
 }
 
+data class PhaseAdvice(
+    val title: String,
+    val content: String,
+    val tag: String
+)
+
+fun getAdviceForPhase(phaseName: String?, day: Int?): PhaseAdvice {
+    val phaseLower = phaseName?.lowercase() ?: ""
+    return when {
+        phaseLower.contains("menstru") || phaseLower.contains("règle") || (day != null && day in 1..5) -> {
+            PhaseAdvice(
+                title = "Conseil Bien-être • Menstruation",
+                content = "Boire de l'eau tiède et appliquer une douce chaleur sur le bas-ventre aide à détendre naturellement les muscles utérins et apaiser les crampes.",
+                tag = "Chaleur & Décontraction"
+            )
+        }
+        phaseLower.contains("follicul") || (day != null && day in 6..12) -> {
+            PhaseAdvice(
+                title = "Conseil Vitalité • Phase Folliculaire",
+                content = "Vos oestrogènes remontent : c'est le moment d'intégrer des aliments riches en fer et protéines végétales pour dynamiser votre créativité et vos projets.",
+                tag = "Énergie & Renouveau"
+            )
+        }
+        phaseLower.contains("ovulat") || phaseLower.contains("fertile") || (day != null && day in 13..16) -> {
+            PhaseAdvice(
+                title = "Conseil Éclat • Phase Ovulatoire",
+                content = "Votre pic d'énergie et de clarté mentale est optimal. Idéal pour vos rendez-vous importants, négociations et activités sportives.",
+                tag = "Communication & Force"
+            )
+        }
+        phaseLower.contains("luté") || (day != null && day >= 17) -> {
+            PhaseAdvice(
+                title = "Conseil Sérénité • Phase Lutéale",
+                content = "La progestérone invite au ralentissement. Privilégiez les aliments riches en magnésium (amandes, chocolat noir) et un sommeil régulier.",
+                tag = "Équilibre & Écoute de soi"
+            )
+        }
+        else -> {
+            PhaseAdvice(
+                title = "Conseil Bien-être CLEA",
+                content = "Restez à l'écoute de vos sensations corporelles et hydratez-vous régulièrement tout au long de la journée.",
+                tag = "Harmonie Quotidienne"
+            )
+        }
+    }
+}
+
 @Composable
-fun HygieneTipCard(modifier: Modifier = Modifier) {
+fun HygieneTipCard(
+    phaseName: String? = null,
+    cycleDay: Int? = null,
+    modifier: Modifier = Modifier
+) {
+    val advice = remember(phaseName, cycleDay) { getAdviceForPhase(phaseName, cycleDay) }
+
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
-        shape = RoundedCornerShape(16.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+        ),
+        shape = RoundedCornerShape(18.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Lightbulb, contentDescription = null, tint = Color(0xFF2E7D32))
-            Spacer(Modifier.width(12.dp))
-            Column {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(38.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = advice.title,
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+
                 Text(
-                    text = stringResource(R.string.dashboard_tip_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFF2E7D32),
-                    fontWeight = FontWeight.Bold
+                    text = advice.content,
+                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.9f)
                 )
-                Text(
-                    text = stringResource(R.string.dashboard_tip_content),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF2E7D32)
-                )
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Text(
+                        text = advice.tag,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
     }
@@ -134,7 +262,7 @@ fun StartCycleCard(onStart: () -> Unit, modifier: Modifier = Modifier) {
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(R.string.dashboard_no_active_cycle_title),
                 style = MaterialTheme.typography.titleLarge,
@@ -143,14 +271,15 @@ fun StartCycleCard(onStart: () -> Unit, modifier: Modifier = Modifier) {
             Text(
                 text = stringResource(R.string.dashboard_no_active_cycle_desc),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(vertical = 8.dp)
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 10.dp)
             )
             Button(
                 onClick = onStart,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF913131)),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(14.dp)
             ) {
-                Text(stringResource(R.string.dashboard_start_cycle_button))
+                Text(stringResource(R.string.dashboard_start_cycle_button), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -166,11 +295,11 @@ fun ActionSmallCard(
         modifier = modifier
             .height(80.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+            Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
         }
     }
 }
-

@@ -4,14 +4,17 @@ import androidx.room.Room
 import com.drcmind.cleaapp.data.local.datastore.AuthDataStore
 import com.drcmind.cleaapp.data.local.room.CleaDatabase
 import com.drcmind.cleaapp.data.remote.api.AgendaApiService
+import com.drcmind.cleaapp.data.remote.api.ArticleApiService
 import com.drcmind.cleaapp.data.remote.api.AuthApi
 import com.drcmind.cleaapp.data.remote.api.HomeApiService
 import com.drcmind.cleaapp.data.remote.api.MenstrualApiService
 import com.drcmind.cleaapp.data.repository.AgendaRepositoryImpl
+import com.drcmind.cleaapp.data.repository.ArticleRepositoryImpl
 import com.drcmind.cleaapp.data.repository.AuthRepositoryImpl
 import com.drcmind.cleaapp.data.repository.HomeRepositoryImpl
 import com.drcmind.cleaapp.data.repository.MenstrualRepositoryImpl
 import com.drcmind.cleaapp.domain.repository.AgendaRepository
+import com.drcmind.cleaapp.domain.repository.ArticleRepository
 import com.drcmind.cleaapp.domain.repository.AuthRepository
 import com.drcmind.cleaapp.domain.repository.HomeRepository
 import com.drcmind.cleaapp.domain.repository.MenstrualRepository
@@ -20,6 +23,7 @@ import com.drcmind.cleaapp.ui.auth.login.LoginViewModel
 import com.drcmind.cleaapp.ui.auth.login.SignInViewModel
 import com.drcmind.cleaapp.ui.auth.splash.SplashViewModel
 import com.drcmind.cleaapp.ui.home.HomeViewModel
+import com.drcmind.cleaapp.ui.library.LibraryViewModel
 import com.drcmind.cleaapp.ui.menstrual.MenstrualViewModel
 import com.drcmind.cleaapp.ui.profile.ProfileViewModel
 import org.koin.android.ext.koin.androidContext
@@ -38,18 +42,21 @@ val appModule = module {
     }
     single { get<CleaDatabase>().menstrualDao }
     single { get<CleaDatabase>().agendaDao }
+    single { get<CleaDatabase>().articleDao }
 
     // Data Layer - Remote
     single { AuthApi(get()) }
     single { MenstrualApiService(get(), get(), get()) }
     single { HomeApiService(get(), get(), get()) }
     single { AgendaApiService(get(), get(), get()) }
+    single { ArticleApiService(get(), get(), get()) }
 
     // Repositories
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<MenstrualRepository> { MenstrualRepositoryImpl(get(), get()) }
     single<HomeRepository> { HomeRepositoryImpl(get()) }
     single<AgendaRepository> { AgendaRepositoryImpl(get(), get()) }
+    single<ArticleRepository> { ArticleRepositoryImpl(get(), get()) }
     
     // UI Layer - ViewModels
     viewModelOf(::SplashViewModel)
@@ -59,4 +66,5 @@ val appModule = module {
     viewModelOf(::MenstrualViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::AgendaViewModel)
+    viewModelOf(::LibraryViewModel)
 }

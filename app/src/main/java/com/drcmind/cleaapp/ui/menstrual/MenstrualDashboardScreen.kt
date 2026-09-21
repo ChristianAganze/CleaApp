@@ -194,7 +194,12 @@ fun MenstrualDashboardScreen(
                     }
                     
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        HygieneTipCard()
+                        val currentDay = dashboard?.activeCycle?.getCurrentDay()
+                        val phase = dashboard?.getPhaseName()
+                        HygieneTipCard(
+                            phaseName = phase,
+                            cycleDay = currentDay
+                        )
                     }
 
                     item(span = { GridItemSpan(maxLineSpan) }) {
